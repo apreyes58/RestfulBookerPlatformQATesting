@@ -6,6 +6,7 @@ import io.cucumber.junit.CucumberOptions;
 import org.junit.runner.RunWith;
 
 @RunWith(Cucumber.class)
-@CucumberOptions(features = "src/test/resources/features/admincreateroom.feature", glue = {"stepdefinitions"})
+@CucumberOptions(features = "src/test/resources/features/admincreateroom.feature", glue = {"stepdefinitions"},
+plugin = {"pretty", "html:target/reports/CreateRoomReport.html"})
 public class CreateRoomRunner {
 }
