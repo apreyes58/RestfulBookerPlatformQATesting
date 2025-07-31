@@ -19,7 +19,6 @@ public class AdminRoomsPage {
 
     public AdminRoomsPage(WebDriver driver) throws URISyntaxException {
         createRoom = new CreateRoomComponent(driver);
-        json = RestAssured.given().when().get(BASE).then().extract().jsonPath();
     }
 
     public void createRoom(String number, String type, String accessible, int price, List<String> features) {
@@ -28,6 +27,7 @@ public class AdminRoomsPage {
     }
 
     public String verifyRoom(String number, String type, String accessible, int price, List<String> features) {
+        json = RestAssured.given().when().get(BASE).then().extract().jsonPath();
         List<Map<String, Object>> rooms = json.getList("rooms");
         for (Map<String, Object> room : rooms) {
             String actualNumber = room.get("roomName").toString();

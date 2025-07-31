@@ -61,7 +61,6 @@ public class CreateRoomSteps {
         List<String> features = Arrays.asList(feat.split("\\s*,\\s*"));
         adminRooms.createRoom(name, type, accessible, price, features);
         String result = adminRooms.verifyRoom(name, type, accessible, price, features);
-        System.out.println("User creates room with given values.");
         if (expected.equals(result))
             System.out.println("Test passed!");
         else
