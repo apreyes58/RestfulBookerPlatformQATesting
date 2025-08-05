@@ -1,6 +1,10 @@
 Feature: POST service of rooms
 
-  Scenario:
+  Scenario Outline:
     Given Data is given through excel file <excel>
     And Data is read
-    Then Use data set to test endpoint
+    Then Now check tests if valid
+
+    Examples:
+      | excel                               |
+      | "src/test/resources/PostRooms.xlsx" |
