@@ -1,6 +1,8 @@
 package services;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.RestAssured;
+import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSender;
 import io.restassured.specification.RequestSpecification;
@@ -50,55 +52,67 @@ public class RoomService {
         Sheet sheet = workbook.getSheet("Sheet1");
         Map<String, Object> request;
         List<String> features;
+        ObjectMapper mapper = new ObjectMapper();
+        Response loginResponse = given()
+                .contentType(ContentType.JSON)
+                .body(Map.of("username", "admin", "password", "password"))
+                .post("http://localhost:3004/auth/login");
+
+        String token = loginResponse.getCookie("token");
         for (Row row: sheet) {
             request = new HashMap<>();
+            if (row.getRowNum() == 0)
+                continue;
             for (Cell cell: row) {
-                if (row.getRowNum() == 0)
-                    continue;
                 switch (cell.getColumnIndex()) {
                     case 0:
-                        System.out.println(cell.getNumericCellValue());
-                        request.put("roomid", ((int) cell.getNumericCellValue()));
+                        request.put("roomid", (int) cell.getNumericCellValue());
                         break;
                     case 1:
-                        System.out.println(cell.getStringCellValue());
+//                        System.out.println(cell.getStringCellValue());
                         request.put("roomName", cell.getStringCellValue());
                         break;
                     case 2:
-                        System.out.println(cell.getStringCellValue());
+//                        System.out.println(cell.getStringCellValue());
                         request.put("type", cell.getStringCellValue());
                         break;
                     case 3:
-                        System.out.println(cell.getBooleanCellValue());
+//                        System.out.println(cell.getBooleanCellValue());
                         request.put("accessible", cell.getBooleanCellValue());
                         break;
                     case 4:
-                        System.out.println(cell.getStringCellValue());
+//                        System.out.println(cell.getStringCellValue());
                         request.put("image", cell.getStringCellValue());
                         break;
                     case 5:
-                        System.out.println(cell.getStringCellValue());
+//                        System.out.println(cell.getStringCellValue());
                         request.put("description", cell.getStringCellValue());
                         break;
                     case 6:
-                        features = Arrays.stream(cell.getStringCellValue().split(",")).map(String::trim).toList();
-                        System.out.println(features);
+                        features = Arrays.asList(cell.getStringCellValue().split("\\|"));
+//                        System.out.println(features);
                         request.put("features", features);
                         break;
                     case 7:
-                        System.out.println(cell.getNumericCellValue());
-                        request.put("roomPrice", cell.getNumericCellValue());
+//                        System.out.println(cell.getNumericCellValue());
+                        request.put("roomPrice", (int) cell.getNumericCellValue());
                         break;
                 }
             }
-            Response post = given().header("Content-Type", "application/json")
-                    .body(request).post("room/").then().statusCode(400).extract().response();
-            System.out.println("Row" + row.getRowNum() + " response: " + post.asString());
+            String jsonBody = mapper.writeValueAsString(request);
+
+            Response post = given()
+                    .contentType(ContentType.JSON)
+                    .accept(ContentType.JSON)
+                    .cookie("token", token)
+                    .log().all()
+                    .body(jsonBody)
+                    .post("room/").then().statusCode(201).extract().response();
+            System.out.println("Row " + row.getRowNum() + " response: " + post.asString());
         }
 
     }
 
-    //QUERY!!!
     public void checkRoom() {
 
     }

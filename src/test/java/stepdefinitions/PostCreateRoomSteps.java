@@ -4,7 +4,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import org.apache.poi.ss.usermodel.Workbook;
-import services.RoomService;
+import services.*;
 
 import java.io.IOException;
 

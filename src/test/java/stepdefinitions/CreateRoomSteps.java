@@ -2,6 +2,7 @@ package stepdefinitions;
 
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
+import io.cucumber.java.BeforeStep;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -9,10 +10,7 @@ import io.cucumber.java.en.When;
 import org.junit.Assert;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
-import pages.AdminLoginPage;
-import pages.AdminRoomsPage;
-import pages.HomePage;
-
+import pages.*;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,7 +22,6 @@ public class CreateRoomSteps {
     AdminLoginPage adminLogin;
     AdminRoomsPage adminRooms;
 
-    @Before
     public void setUp() {
         System.setProperty("webdriver.chrome.driver", "src/test/resources/drivers/chromedriver.exe");
         driver = new ChromeDriver();
@@ -32,13 +29,13 @@ public class CreateRoomSteps {
         home = new HomePage(driver);
     }
 
-    @After
     public void tearDown() {
         driver.quit();
     }
 
     @Given("User goes to {string}")
     public void userGoesToUrl(String url) {
+        setUp();
         home.getToHomePage(url);
         System.out.println("User enters website.");
     }
@@ -66,5 +63,6 @@ public class CreateRoomSteps {
         else
             System.out.println("Test failed!");
         Assert.assertEquals(expected, result);
+        tearDown();
     }
 }
