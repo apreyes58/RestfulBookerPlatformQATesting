@@ -17,13 +17,9 @@ public class PostCreateRoomSteps {
         workbook = service.getData(file);
     }
 
-    @And("Data is read")
+    @And("Data is read and validated")
     public void dataIsRead() throws IOException {
         service.postRoom(workbook);
     }
 
-    @Then("Now check tests if valid")
-    public void useDataSetToTestEndpoint() {
-
-    }
 }
