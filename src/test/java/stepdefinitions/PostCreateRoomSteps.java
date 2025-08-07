@@ -4,6 +4,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import org.apache.poi.ss.usermodel.Workbook;
+import pages.AdminRoomsPage;
 import services.*;
 
 import java.io.IOException;
@@ -12,7 +13,7 @@ public class PostCreateRoomSteps {
     RoomService service = new RoomService();
     Workbook workbook;
     @Given("Data is given through excel file {string}")
-    public void dataIsGivenThroughExcelFileExcel(String file) {
+    public void dataIsGivenThroughExcelFileExcel(String file) throws IOException {
         workbook = service.getData(file);
     }
 
@@ -23,5 +24,6 @@ public class PostCreateRoomSteps {
 
     @Then("Now check tests if valid")
     public void useDataSetToTestEndpoint() {
+
     }
 }

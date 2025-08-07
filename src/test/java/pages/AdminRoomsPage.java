@@ -21,6 +21,10 @@ public class AdminRoomsPage {
         createRoom = new CreateRoomComponent(driver);
     }
 
+    public AdminRoomsPage() {
+        this.createRoom = null;
+    }
+
     public void createRoom(String number, String type, String accessible, int price, List<String> features) {
         createRoom.enterInfo(number, type, accessible, price, String.valueOf(features));
         createRoom.clickSubmit();

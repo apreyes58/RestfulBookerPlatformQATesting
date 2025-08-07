@@ -1,27 +1,29 @@
 package services;
 
+import com.aventstack.extentreports.ExtentReports;
+import com.aventstack.extentreports.ExtentTest;
+import com.aventstack.extentreports.Status;
+import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.cucumber.java.an.E;
 import io.restassured.RestAssured;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
-import io.restassured.specification.RequestSender;
-import io.restassured.specification.RequestSpecification;
-import org.apache.poi.ss.formula.functions.Column;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.junit.Assert;
+import pages.AdminRoomsPage;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static io.restassured.RestAssured.given;
 
@@ -32,9 +34,9 @@ public class RoomService {
         RestAssured.baseURI = BASE;
     }
 
-    public Workbook getData (String file) {
+    public Workbook getData (String file) throws IOException {
         File excelFile;
-        FileInputStream input;
+        FileInputStream input = null;
         Workbook workbook = null;
         try {
             excelFile = new File(file);
@@ -44,12 +46,19 @@ public class RoomService {
         catch (IOException e) {
             System.out.println("File " + " not found.");
         }
+        assert input != null;
+        input.close();
         
         return workbook;
     }
 
     public void postRoom(Workbook workbook) throws IOException {
         Sheet sheet = workbook.getSheet("Sheet1");
+        ExtentReports extent = new ExtentReports();
+        ExtentSparkReporter spark = new ExtentSparkReporter("target/reports/PostRoomReport.html");
+        extent.attachReporter(spark);
+
+        int expected = 0;
         Map<String, Object> request;
         List<String> features;
         ObjectMapper mapper = new ObjectMapper();
@@ -60,9 +69,10 @@ public class RoomService {
 
         String token = loginResponse.getCookie("token");
         for (Row row: sheet) {
-            request = new HashMap<>();
             if (row.getRowNum() == 0)
                 continue;
+            request = new HashMap<>();
+            ExtentTest test = extent.createTest("Test " + row).assignCategory("Creating rooms using POST.");
             for (Cell cell: row) {
                 switch (cell.getColumnIndex()) {
                     case 0:
@@ -97,8 +107,12 @@ public class RoomService {
 //                        System.out.println(cell.getNumericCellValue());
                         request.put("roomPrice", (int) cell.getNumericCellValue());
                         break;
+                    case 8:
+                        expected = (int) cell.getNumericCellValue();
+                        break;
                 }
             }
+
             String jsonBody = mapper.writeValueAsString(request);
 
             Response post = given()
@@ -107,14 +121,20 @@ public class RoomService {
                     .cookie("token", token)
                     .log().all()
                     .body(jsonBody)
-                    .post("room/").then().statusCode(201).extract().response();
+                    .post("room/").then().extract().response();
             System.out.println("Row " + row.getRowNum() + " response: " + post.asString());
+            if (post.getStatusCode() == expected && post.getStatusCode() == 201) {
+                test.pass("Success! Updated database.");
+            }
+            else if (post.getStatusCode() == expected && post.getStatusCode() == 400) {
+                test.pass("Success! Rejected node values.").
+                        log(Status.PASS, "Reason: " + post.jsonPath().getString("fieldErrors[0]"));
+            }
+            else {
+                Assert.fail();
+            }
         }
-
+        workbook.close();
+        extent.flush();
     }
-
-    public void checkRoom() {
-
-    }
-
 }
